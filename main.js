@@ -38,9 +38,20 @@ const banmen = [
   [0, 0, 0, 0, 0, 0, 0, 0],
 ];
 
+/* 機能を書いていく */
+// プレーヤーとCPUを決定する
+// プレーヤーは色と先行・後攻を選べる
+
 /* ロジックを考えて記述していく */
+// 盤面は2次元配列で実現する
+// 色は白を1、黒を2、何も置いていない箇所を0として表現する
+// ひっくり返せる石があるか判定するには盤面の「縦、横、斜め」の全方向の配列を検索する
 // 縦横斜めの判定を行い、次の石が自分と違う色
 // 次の石が自分と違う色且つ最後に自分と同じ色で挟まれていること
+// 配列の値により判定する
+// 1, 2, 2, 1
+// 1, 2, 1, 1, 2 のパターンも有る
+// 先頭以外で自分の色が出てきた場合はループ処理を抜ける必要がある
 
 // 石が置けるか判定する
 function canPutStone(originX, originY, currentColor) {
@@ -57,11 +68,11 @@ function canPutStone(originX, originY, currentColor) {
 
   // 石を置きたい場所の八方向それぞれについて石がどのように配置されているか調べる
   directions.forEach((direction, index) => {
-    console.log(` /--- forEach ${index + 1 }回目 ---/`);
+    console.log(` /--- forEach ${index + 1}回目 ---/`);
     console.log(`オセロを置いた座標 Y:${originY}  X:${originX}`);
     var x = originX;
     var y = originY;
-    var currentCD = []; // ひっくり返せる座標を格納するオブジェクト
+    var currentCoordinate = []; // ひっくり返せる座標を格納するオブジェクト
     var stones = [currentColor]; // 自分がいま置いた石
     console.log(direction);
     // 最大7回繰り返す
@@ -81,12 +92,11 @@ function canPutStone(originX, originY, currentColor) {
       stones.push(banmen[y][x]);
       if (banmen[y][x] !== currentColor) {
         console.log("ひっくり返す座標を確認しています");
-        currentCD.push({ y, x });
-        console.log(currentCD);
+        currentCoordinate.push({ y, x });
+        console.log(currentCoordinate);
         console.log(stones);
         console.log("/ --- --- --- --- /");
       }
-
       // 次の石がプレーヤーと同じ色だったら処理を停止する
       if (stones[1] === currentColor) {
         console.log("次の石がプレーヤーと同じ色だった: " + currentColor);
@@ -94,12 +104,9 @@ function canPutStone(originX, originY, currentColor) {
         console.log("/ --- --- --- --- /");
         return;
       }
-      // 1, 2, 2, 1
-      // 1, 2, 1, 1, 2 のパターンも有る
-      // 先頭以外で自分の色が出てきた場合はループ処理を抜ける必要がある
     }
 
-    // 配列が一つしかな場合はひっくり返せる石がない
+    // 配列が一つしかな場合はひっくり返せる石がないのでループを停止
     if (stones.length <= 1) {
       return;
     }
@@ -118,18 +125,18 @@ function canPutStone(originX, originY, currentColor) {
           direction.name +
           "には、ひっくり返せる"
       );
-      console.log("lastIndex: " + stones[lastIndex]);
-      console.log("ひっくり返す座標です: " + JSON.stringify(currentCD));
+      // console.log("lastIndex: " + stones[lastIndex]);
+      console.log("ひっくり返す座標です: " + JSON.stringify(currentCoordinate));
       banmen[originY][originX] = currentColor;
-      // banmen[currentCD.y][currentCD.x] = currentColor;
       console.log("--- --- ---");
-      console.log(currentCD);
+      console.log(currentCoordinate);
       console.log("--- --- ---");
-      turnOver(currentCD, banmen, currentColor, banmen.reflesh);
+      // ひっくり返す処理をまとめた関数
+      turnOver(currentCoordinate, banmen, currentColor, banmen.reflesh);
       canReverse = true;
     }
   });
-  console.log('  ')
+  console.log("  ");
   return canReverse;
 }
 
@@ -178,9 +185,9 @@ banmen.reflesh = () => {
   }
 };
 // オセロをひっくり返す関数
-function turnOver(currentCD, banmen, currentColor, reflesh) {
+function turnOver(currentCoordinate, banmen, currentColor, reflesh) {
   try {
-    currentCD.forEach((item) => {
+    currentCoordinate.forEach((item) => {
       banmen[item.y][item.x] = currentColor;
     });
     reflesh();
