@@ -16,9 +16,12 @@
         id="canvas"
         style="background-color: green"
       ></canvas>
-      <!-- <canvas id="canvas" class="c-canvas"></canvas> -->
+      <form action="" id="gameStartTarget" class="game__start__container">
+        <input type="radio" name="player" value="1" /><span>白</span>
+        <input type="radio" name="player" value="2" /><span>黒</span>
+        <button type="submit" onclick="gameStart(event)">スタート</button>
+      </form>
     </main>
-    <button>スタート</button>
     <script src="main.js"></script>
   </body>
 </html>

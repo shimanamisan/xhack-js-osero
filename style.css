@@ -3,3 +3,11 @@
   width: 640px;
   text-align: center;
 }
+
+.game__start__container {
+  margin-top: 48px;
+}
+
+.game__start__container input {
+  display: inline-block;
+}
