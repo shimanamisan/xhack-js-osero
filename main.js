@@ -4,15 +4,33 @@ const canvas = document.getElementById("canvas");
 // canvas要素に対して線や円を書いたり、操作することが出来るいろいろなメソッドを持っている
 const ctx = canvas.getContext("2d");
 let player = document.getElementById("player");
+// fomr要素を取得
+const gameStartElement = document.getElementById("gameStartTarget");
+// form要素内のラジオボタングループを取得
+let formList = gameStartElement.player;
 
 // マスのサイズ
 const FIELD_WIDTH = 400;
 const FIELD_HEIGHT = 400;
 // 碁盤の目のサイズ
 const BLOCK_SIZE = FIELD_WIDTH / 8;
-const BLACK = 2;
-const WHITE = 1;
+let WHITE = 1; // 1
+let BLACK = 2; // 2
 let currentPlayer = WHITE;
+
+function gameStart(event) {
+  event.preventDefault();
+  if (formList.value === "1") {
+    // 選択状態の値（value）を取得
+    WHITE = Number(formList.value);
+    initCurrentPlayer(WHITE);
+  } else if (formList.value === "2") {
+    BLACK = Number(formList.value);
+    initCurrentPlayer(BLACK);
+  } else {
+    console.log("error");
+  }
+}
 
 // 座標の移動を管理するオブジェクト
 const directions = [
@@ -26,8 +44,8 @@ const directions = [
   { name: "右上方向", x: 1, y: -1 },
 ];
 
-// banmenの二次元配列データを元にcanvasに石を実際に配置するコードを書いてみる
-const banmen = [
+// boardの二次元配列データを元にcanvasに石を実際に配置するコードを書いてみる
+const board = [
   [0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0],
@@ -53,6 +71,8 @@ const banmen = [
 // 1, 2, 1, 1, 2 のパターンも有る
 // 先頭以外で自分の色が出てきた場合はループ処理を抜ける必要がある
 
+// CPU機能を作っていく
+
 // 石が置けるか判定する
 function canPutStone(originX, originY, currentColor) {
   let reversStoneColor = currentColor === WHITE ? BLACK : WHITE;
@@ -61,7 +81,7 @@ function canPutStone(originX, originY, currentColor) {
     "ひっくり返す色： " + reversStoneColor,
     " 自分が置いた石: " + currentColor
   );
-  if (banmen[originY][originX] !== 0) {
+  if (board[originY][originX] !== 0) {
     alert("既に石が置かれています。");
     return false;
   }
@@ -72,12 +92,14 @@ function canPutStone(originX, originY, currentColor) {
     console.log(`オセロを置いた座標 Y:${originY}  X:${originX}`);
     var x = originX;
     var y = originY;
-    var currentCoordinate = []; // ひっくり返せる座標を格納するオブジェクト
-    var stones = [currentColor]; // 自分がいま置いた石
+    var currentCoordinate = []; // ひっくり返せる座標のオブジェクト格納する配列
+    var stones = [currentColor]; // 自分がいま置いた石の色
     console.log(direction);
     // 最大7回繰り返す
     for (let i = 1; i <= 7; i++) {
-      // クリックした盤面を基準に縦横斜めにオセロが置かれているのか判定する
+      // 盤面をクリックした座標（originY, originX）の値を基準に縦横斜めにオセロが置かれているのか判定する（directionsオブジェクトを使用）
+      // y:4 x:4 に配置した場合に左方向に検索していく際は、x:3, x:2, x:1, x:0 とループしていき、x:-1 になったらループを抜ける
+      // y軸に対しても同様の処理を行う
       x += direction.x;
       y += direction.y;
       console.log(`${direction.name} 盤面を検索しています: x:${x} y:${y}`);
@@ -85,12 +107,12 @@ function canPutStone(originX, originY, currentColor) {
         break; // 閾値まで到達したらループ処理を抜ける
       }
       // 何も置いていないマスだったら処理を抜ける
-      if (banmen[y][x] === 0) {
+      if (board[y][x] === 0) {
         break;
       }
       // ひっくり返せる盤面の情報を配列に追加
-      stones.push(banmen[y][x]);
-      if (banmen[y][x] !== currentColor) {
+      stones.push(board[y][x]);
+      if (board[y][x] !== currentColor) {
         console.log("ひっくり返す座標を確認しています");
         currentCoordinate.push({ y, x });
         console.log(currentCoordinate);
@@ -127,12 +149,12 @@ function canPutStone(originX, originY, currentColor) {
       );
       // console.log("lastIndex: " + stones[lastIndex]);
       console.log("ひっくり返す座標です: " + JSON.stringify(currentCoordinate));
-      banmen[originY][originX] = currentColor;
+      board[originY][originX] = currentColor;
       console.log("--- --- ---");
       console.log(currentCoordinate);
       console.log("--- --- ---");
       // ひっくり返す処理をまとめた関数
-      turnOver(currentCoordinate, banmen, currentColor, banmen.reflesh);
+      turnOver(currentCoordinate, board, currentColor, board.reflesh);
       canReverse = true;
     }
   });
@@ -173,22 +195,22 @@ canvas.onclick = (e) => {
 };
 
 // オブジェクトに新しく配列を追加
-banmen.reflesh = () => {
+board.reflesh = () => {
   for (let x = 0; x < 8; x++) {
     for (let y = 0; y < 8; y++) {
-      if (banmen[y][x] === 1) {
+      if (board[y][x] === 1) {
         drawStone(x, y, WHITE);
-      } else if (banmen[y][x] === 2) {
+      } else if (board[y][x] === 2) {
         drawStone(x, y, BLACK);
       }
     }
   }
 };
 // オセロをひっくり返す関数
-function turnOver(currentCoordinate, banmen, currentColor, reflesh) {
+function turnOver(currentCoordinate, board, currentColor, reflesh) {
   try {
     currentCoordinate.forEach((item) => {
-      banmen[item.y][item.x] = currentColor;
+      board[item.y][item.x] = currentColor;
     });
     reflesh();
   } catch (e) {
@@ -250,6 +272,15 @@ function changeUser(currentPlayer) {
   }
 }
 
+// ゲームスタート時に石を選択する
+function initCurrentPlayer(val) {
+  if (currentPlayer === val) {
+    player.innerHTML = "白色";
+  } else {
+    player.innerHTML = "黒色";
+  }
+}
+
 // ゲームの初期化
 function init() {
   // オセロを配置する
@@ -257,12 +288,7 @@ function init() {
   // drawStone(4, 3, "white");
   // drawStone(4, 4, "black");
   // drawStone(3, 3, "black");
-  banmen.reflesh();
-  if (currentPlayer === WHITE) {
-    player.innerHTML = "白色";
-  } else {
-    player.innerHTML = "黒色";
-  }
+  board.reflesh();
 
   // 盤面の線を描画する
   for (let k = 1; k < 8; k++) {
