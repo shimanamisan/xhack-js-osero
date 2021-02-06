@@ -9,18 +9,29 @@
   <body>
     <main class="container">
       <h1>オセロゲーム</h1>
-      <p>現在のプレーヤー: <span id="player"></span></p>
-      <canvas
-        width="400"
-        height="400"
-        id="canvas"
-        style="background-color: green"
-      ></canvas>
-      <form action="" id="gameStartTarget" class="game__start__container">
-        <input type="radio" name="player" value="1" /><span>白</span>
-        <input type="radio" name="player" value="2" /><span>黒</span>
-        <button type="submit" onclick="gameStart(event)">スタート</button>
-      </form>
+      <div class="container__innner">
+        <p>現在のプレーヤー: <span id="player"></span></p>
+        <canvas
+          width="400"
+          height="400"
+          id="canvas"
+          style="background-color: green"
+        ></canvas>
+      </div>
+
+      <div class="game__select__container">
+        <div class="game__select">
+          <p>先行・後攻を選択して下さい！</p>
+        </div>
+  
+        <form action="" id="gameStartTarget" class="game__start__container">
+          <input type="radio" name="player" value="1" /><span>白</span>
+          <input type="radio" name="player" value="2" /><span>黒</span>
+          <button class="game__btn" type="submit" onclick="gameStart(event)">
+            スタート
+          </button>
+        </form>
+      </div>
     </main>
     <script src="main.js"></script>
   </body>

@@ -4,10 +4,27 @@
   text-align: center;
 }
 
+.container__innner {
+  opacity: 1;
+}
+
 .game__start__container {
   margin-top: 48px;
 }
 
 .game__start__container input {
   display: inline-block;
+}
+
+.game__select__container {
+  position: relative;
+  /* top: -21rem; */
+}
+
+.game__select {
+  margin-top: 32px;
+}
+
+.game__btn {
+  margin-left: 26px;
 }

@@ -3,7 +3,10 @@ const canvas = document.getElementById("canvas");
 // getContext()メソッドを使ってコンテキストというオブジェクトを取得する
 // canvas要素に対して線や円を書いたり、操作することが出来るいろいろなメソッドを持っている
 const ctx = canvas.getContext("2d");
+// ゲームスタート時に表示・非表示する要素を取得
 let player = document.getElementById("player");
+let gameContainer = document.querySelector(".container__innner");
+let gameStartContainer = document.querySelector(".game__select__container");
 // fomr要素を取得
 const gameStartElement = document.getElementById("gameStartTarget");
 // form要素内のラジオボタングループを取得
@@ -29,7 +32,10 @@ function gameStart(event) {
     initCurrentPlayer(BLACK);
   } else {
     console.log("error");
+    return;
   }
+  gameContainer.style.opacity = 1;
+  gameStartContainer.style.display = "none";
 }
 
 // 座標の移動を管理するオブジェクト
@@ -56,6 +62,19 @@ const board = [
   [0, 0, 0, 0, 0, 0, 0, 0],
 ];
 
+// オブジェクトに新しく配列を追加
+board.reflesh = () => {
+  for (let x = 0; x < 8; x++) {
+    for (let y = 0; y < 8; y++) {
+      if (board[y][x] === 1) {
+        drawStone(x, y, WHITE);
+      } else if (board[y][x] === 2) {
+        drawStone(x, y, BLACK);
+      }
+    }
+  }
+};
+
 /* 機能を書いていく */
 // プレーヤーとCPUを決定する
 // プレーヤーは色と先行・後攻を選べる
@@ -72,15 +91,97 @@ const board = [
 // 先頭以外で自分の色が出てきた場合はループ処理を抜ける必要がある
 
 // CPU機能を作っていく
+function cpuDwawSrone() {
+  console.log("CPU: ボードを検索しています。");
+  let Y = null;
+  let X = null;
+  const cpuDirections = [];
+  board.forEach((items, index) => {
+    Y = index;
+    // console.log({ Y });
+    for (let i = 0; i < items.length; i++) {
+      X = i;
+      // console.log({ X });
+      cpuPutSearchStonw(X, Y, currentPlayer, cpuDirections);
+    }
+  });
+  let searchLength = Math.floor(Math.random() * cpuDirections.length);
+  console.log(cpuDirections[searchLength]);
+  let cpuPosX = cpuDirections[searchLength].X;
+  let cpuPosY = cpuDirections[searchLength].Y;
+  canPutStone(cpuPosX, cpuPosY, currentPlayer);
+  
+}
+cpuDwawSrone();
+
+// CPU用のオセロ配置出来る場所を検索するメソッド
+function cpuPutSearchStonw(X, Y, cpuColor, cpuDirections) {
+  // 石を置きたい場所の八方向それぞれについて石がどのように配置されているか調べる
+  directions.forEach((direction, index) => {
+    // console.log(` /--- forEach ${index + 1}回目 ---/`);
+    // console.log(`CPUが検索するボードの座標 X:${X}  Y:${Y}`);
+    var x = X;
+    var y = Y;
+    // 自分がいま置いた石の色を格納しておく
+    // 次の配列に格納された石が自分と異なる色の石ならひっくり返せる可能性がある
+    var stones = [cpuColor];
+    // 最大7回繰り返す
+    for (let i = 1; i <= 7; i++) {
+      x += direction.x;
+      y += direction.y;
+      // console.log(
+      //   `${direction.name} 盤面を検索しています。現在の座標 → x:${x} y:${y}`
+      // );
+      if (x > 7 || x < 0 || y > 7 || y < 0) {
+        // 閾値まで到達したらループ処理を抜ける
+        break;
+      }
+      // 何も置いていないマスだったら処理を抜ける
+      if (board[y][x] === 0) {
+        break;
+      }
+      // ひっくり返せる盤面の情報を配列に追加
+      if (board[y][x] !== 0) {
+        stones.push(board[y][x]);
+        // console.log("+++ ひっくり返せる配列を検知しました +++");
+        // console.log(stones);
+        // console.log(" ");
+      }
+      // 次の石がプレーヤーと同じ色だったら処理を停止する
+      if (stones[1] === cpuColor) {
+        // console.log("次の石がプレーヤーと同じ色だった: " + cpuColor);
+        // console.log("/ --- for ループの処理を停止します。 --- /");
+        // console.log(" ");
+        return;
+      }
+    }
+    // 配列が一つしかな場合はひっくり返せる石がないのでループを停止
+    if (stones.length <= 1) {
+      return;
+    }
+    // 末尾は必ず自分と同じ色である必要がある
+    let lastIndex = stones.length - 1;
+    if (stones[lastIndex] === cpuColor) {
+      // console.log("--- 1方向終了後の処理です ---");
+      // console.log(stones);
+      // console.log(" ");
+      // console.log(
+      //   "x:" + x + " y:" + y + " は" + direction.name + "には、ひっくり返せる"
+      // );
+      // console.log(" ");
+      // console.log(`CPUが石を配置できる座標 X:${X}  Y:${Y}`);
+      // console.log(" ");
+      cpuDirections.push({ X, Y });
+      return;
+    }
+  });
+  return cpuDirections;
+}
 
 // 石が置けるか判定する
 function canPutStone(originX, originY, currentColor) {
   let reversStoneColor = currentColor === WHITE ? BLACK : WHITE;
   let canReverse = false; // ひっくり返せるかのフラグ
-  console.log(
-    "ひっくり返す色： " + reversStoneColor,
-    " 自分が置いた石: " + currentColor
-  );
   if (board[originY][originX] !== 0) {
     alert("既に石が置かれています。");
     return false;
@@ -147,14 +248,13 @@ function canPutStone(originX, originY, currentColor) {
           direction.name +
           "には、ひっくり返せる"
       );
-      // console.log("lastIndex: " + stones[lastIndex]);
       console.log("ひっくり返す座標です: " + JSON.stringify(currentCoordinate));
-      board[originY][originX] = currentColor;
       console.log("--- --- ---");
       console.log(currentCoordinate);
       console.log("--- --- ---");
+      board[originY][originX] = currentColor;
       // ひっくり返す処理をまとめた関数
-      turnOver(currentCoordinate, board, currentColor, board.reflesh);
+      turnOver(currentCoordinate, board, currentColor);
       canReverse = true;
     }
   });
@@ -167,8 +267,10 @@ canvas.onclick = (e) => {
   // 要素の寸法とそのビューポートに対する位置を返す
   // 左上の座標を（0, 0）起点として、要素の左上の位置をtop, left, bottom, right などで指定したり取得したりする
   // DOMRectというオブジェクトの中に {top: xxx, left: xxx ...} のようにそのクリックした要素の座標が取得されている
-  // ここでは盤の大枠の要素の座標が取得されている
+  // ここでは盤の大枠の要素の高さや座標が取得されている
   var rect = e.target.getBoundingClientRect();
+  // console.log(rect) // Object
+
   // 要素の寸法から補正する
   // e.clientX クリックした要素のX座標の位置（ここではcanvas要素内）
   // e.clientY クリックした要素のY座標の位置（ここではcanvas要素内）
@@ -194,29 +296,20 @@ canvas.onclick = (e) => {
   changeUser(currentPlayer);
 };
 
-// オブジェクトに新しく配列を追加
-board.reflesh = () => {
-  for (let x = 0; x < 8; x++) {
-    for (let y = 0; y < 8; y++) {
-      if (board[y][x] === 1) {
-        drawStone(x, y, WHITE);
-      } else if (board[y][x] === 2) {
-        drawStone(x, y, BLACK);
-      }
-    }
-  }
-};
+
 // オセロをひっくり返す関数
-function turnOver(currentCoordinate, board, currentColor, reflesh) {
+function turnOver(currentCoordinate, board, currentColor) {
+  console.log(board)
   try {
     currentCoordinate.forEach((item) => {
       board[item.y][item.x] = currentColor;
     });
-    reflesh();
+    board.reflesh();
   } catch (e) {
     console.log(e);
   }
 }
+
 // 座標を指定して石を置く関数
 function drawStone(x, y, stonColor) {
   // 定数の値からcanvas要素に描画する色を判定
@@ -298,36 +391,3 @@ function init() {
 }
 // 初期化関数実行
 init();
-
-// この辺はウォーミングアップ
-// for(let i = 0; i < 100; i++){
-//     ctx.fillStyle = getRanodmColor();
-//     const pos = getRandomPositon()
-//     const size = getRandomSize()
-//     ctx.fillRect(pos.x, pos.y, size.width, size.height);
-// }
-
-// function loopFunc(fn, count){
-//     for(let i = 0; i < count; i++){
-//         fn();
-//     }
-// }
-
-// loopFunc( () => { console.log("hello")} , 3)
-
-// function goodby(){
-//     console.log('goodbye!');
-// }
-// loopFunc(goodby, 7);
-
-// 色を指定することが出来る
-// ctx.fillStyle = getRanodmColor();
-// 四角形を描画
-// ctx.fillRect(座標x, 座標y, 横幅サイズ, 縦幅サイズ);
-// ランダムな色を返す
-// function getRanodmColor(){
-//     const r = Math.floor(Math.random() * 256);
-//     const g = Math.floor(Math.random() * 256);
-//     const b = Math.floor(Math.random() * 256);
-//     return `rgb(${r}, ${g}, ${b})`;
-// }
