@@ -1,3 +1,19 @@
+/*****************************************
+デバッグ関数
+******************************************/
+cpu_debug_flg = true;
+debug_flg = false;
+function cpuDebug(str) {
+  if (cpu_debug_flg) {
+    console.log(str);
+  }
+}
+function debug(str) {
+  if (debug_flg) {
+    console.log(str);
+  }
+}
+
 // canvas要素を取得する
 const canvas = document.getElementById("canvas");
 // getContext()メソッドを使ってコンテキストというオブジェクトを取得する
@@ -19,23 +35,53 @@ const FIELD_HEIGHT = 400;
 const BLOCK_SIZE = FIELD_WIDTH / 8;
 let WHITE = 1; // 1
 let BLACK = 2; // 2
-let currentPlayer = WHITE;
+let currentPlayer = null;
+let cpuColor = null;
 
+// ゲームをスタートする
 function gameStart(event) {
   event.preventDefault();
+  console.log(formList.value);
   if (formList.value === "1") {
     // 選択状態の値（value）を取得
     WHITE = Number(formList.value);
     initCurrentPlayer(WHITE);
+    // プレーヤーが後攻だった場合はCPUが先攻として実行
+    cpuColor = BLACK;
+    cpuDwawSrone();
   } else if (formList.value === "2") {
     BLACK = Number(formList.value);
     initCurrentPlayer(BLACK);
+    cpuColor = WHITE;
   } else {
     console.log("error");
     return;
   }
   gameContainer.style.opacity = 1;
   gameStartContainer.style.display = "none";
+}
+
+// オセロを置けなかった場合にスキップする
+function skip(event) {
+  event.preventDefault();
+  cpuDwawSrone();
+}
+
+// ボードの数を毎回数えておける場所がなくなったらゲームを終了する
+function checkBoard() {
+  let end_flg = false;
+  for (let x = 0; x < 8; x++) {
+    for (let y = 0; y < 8; y++) {
+      if (board[y][x] === 0) {
+        debug("0が見つかりました");
+        return end_flg;
+      } else {
+        debug("0が見つかりませんでした。ゲームを終了します。");
+        end_flg = true;
+      }
+    }
+  }
+  return end_flg;
 }
 
 // 座標の移動を管理するオブジェクト
@@ -92,68 +138,98 @@ board.reflesh = () => {
 
 // CPU機能を作っていく
 function cpuDwawSrone() {
-  console.log("CPU: ボードを検索しています。");
+  cpuDebug(`CPUのターン`);
+  cpuDebug(" ");
+  cpuDebug(" --- CPU: ボードを検索しています --- ");
   let Y = null;
   let X = null;
   const cpuDirections = [];
   board.forEach((items, index) => {
     Y = index;
-    // console.log({ Y });
+    cpuDebug({ Y });
     for (let i = 0; i < items.length; i++) {
       X = i;
-      // console.log({ X });
-      cpuPutSearchStonw(X, Y, currentPlayer, cpuDirections);
+      cpuDebug({ X });
+      cpuPutSearchStonw(X, Y, cpuColor, cpuDirections);
     }
   });
   let searchLength = Math.floor(Math.random() * cpuDirections.length);
-  console.log(cpuDirections[searchLength]);
-  let cpuPosX = cpuDirections[searchLength].X;
-  let cpuPosY = cpuDirections[searchLength].Y;
-  canPutStone(cpuPosX, cpuPosY, currentPlayer);
-  
-}
-cpuDwawSrone();
+  let cpuPosX;
+  let cpuPosY;
+  cpuDebug(cpuDirections);
+  cpuDebug(cpuDirections[searchLength]);
+  try {
+    cpuPosX = cpuDirections[searchLength].X;
+    cpuPosY = cpuDirections[searchLength].Y;
+  } catch (e) {
+    cpuDebug(`エラーが発生しました ${e}`);
+    cpuDebug(cpuDirections);
+    cpuDebug(cpuDirections[searchLength]);
+  }
 
+  cpuDebug(" --- CPU: ボードを検索終了 --- ");
+  cpuDebug(" ");
+  cpuDebug(`%c CPUのターン終了`, "color: white; font-weight: 600;");
+  cpuDebug(" ");
+
+  setTimeout(() => {
+    canPutStone(cpuPosX, cpuPosY, cpuColor);
+  }, 2000);
+}
 // CPU用のオセロ配置出来る場所を検索するメソッド
 function cpuPutSearchStonw(X, Y, cpuColor, cpuDirections) {
   // 石を置きたい場所の八方向それぞれについて石がどのように配置されているか調べる
   directions.forEach((direction, index) => {
     // console.log(` /--- forEach ${index + 1}回目 ---/`);
-    // console.log(`CPUが検索するボードの座標 X:${X}  Y:${Y}`);
+    cpuDebug(`CPUが検索するボードの座標 X:${X}  Y:${Y}`);
     var x = X;
     var y = Y;
     // 自分がいま置いた石の色を格納しておく
     // 次の配列に格納された石が自分と異なる色の石ならひっくり返せる可能性がある
     var stones = [cpuColor];
+    if (board[y][x] !== 0) {
+      cpuDebug(`既に石が配置された座標なので検索を停止します X:${X}  Y:${Y}`);
+      return;
+    }
     // 最大7回繰り返す
     for (let i = 1; i <= 7; i++) {
+      // cpuDebug(`座標を元にループを開始: ${i}回目`);
       x += direction.x;
       y += direction.y;
-      // console.log(
-      //   `${direction.name} 盤面を検索しています。現在の座標 → x:${x} y:${y}`
+      // cpuDebug(
+      //   `%c ${direction.name}`,
+      //   "color: white; font-weight: 600;",
+      //   `盤面を検索しています。現在の座標 → x:${x} y:${y}`
       // );
       if (x > 7 || x < 0 || y > 7 || y < 0) {
         // 閾値まで到達したらループ処理を抜ける
+        // cpuDebug(`閾値に到達したので処理を抜けます ${i}回目のループ`);
+        // cpuDebug(" ");
         break;
       }
       // 何も置いていないマスだったら処理を抜ける
       if (board[y][x] === 0) {
+        // cpuDebug(`マスが0だったので処理を抜けます ${i}回目のループ`);
+        // cpuDebug(" ");
         break;
       }
+      stones.push(board[y][x]);
+      cpuDebug("0以外の値を配列に追加");
+      cpuDebug(stones);
       // ひっくり返せる盤面の情報を配列に追加
-      if (board[y][x] !== 0) {
-        stones.push(board[y][x]);
-        // console.log("+++ ひっくり返せる配列を検知しました +++");
-        // console.log(stones);
-        // console.log(" ");
+      if (board[y][x] !== cpuColor) {
+        cpuDebug(" ひっくり返せる石の座標を検知しました ");
+        cpuDebug(`検知した座標 y:${y} x:${x}`);
+        cpuDebug(" ");
       }
       // 次の石がプレーヤーと同じ色だったら処理を停止する
       if (stones[1] === cpuColor) {
-        // console.log("次の石がプレーヤーと同じ色だった: " + cpuColor);
-        // console.log("/ --- for ループの処理を停止します。 --- /");
-        // console.log(" ");
+        // cpuDebug("次の石がプレーヤーと同じ色だった: " + cpuColor);
+        // cpuDebug("/ --- for ループの処理を停止します。 --- /");
+        // cpuDebug(" ");
         return;
       }
+      cpuDebug(`ループ処理終了`);
     }
     // 配列が一つしかな場合はひっくり返せる石がないのでループを停止
     if (stones.length <= 1) {
@@ -162,15 +238,15 @@ function cpuPutSearchStonw(X, Y, cpuColor, cpuDirections) {
     // 末尾は必ず自分と同じ色である必要がある
     let lastIndex = stones.length - 1;
     if (stones[lastIndex] === cpuColor) {
-      // console.log("--- 1方向終了後の処理です ---");
-      // console.log(stones);
-      // console.log(" ");
-      // console.log(
-      //   "x:" + x + " y:" + y + " は" + direction.name + "には、ひっくり返せる"
-      // );
-      // console.log(" ");
-      // console.log(`CPUが石を配置できる座標 X:${X}  Y:${Y}`);
-      // console.log(" ");
+      cpuDebug("--- 1方向終了後の処理です ---");
+      cpuDebug(stones);
+      cpuDebug(" ");
+      cpuDebug(
+        "x:" + x + " y:" + y + " は" + direction.name + "には、ひっくり返せる"
+      );
+      cpuDebug(" ");
+      cpuDebug(`CPUが石を配置できる座標 X:${X}  Y:${Y}`);
+      cpuDebug(" ");
       cpuDirections.push({ X, Y });
       return;
     }
@@ -189,13 +265,12 @@ function canPutStone(originX, originY, currentColor) {
 
   // 石を置きたい場所の八方向それぞれについて石がどのように配置されているか調べる
   directions.forEach((direction, index) => {
-    console.log(` /--- forEach ${index + 1}回目 ---/`);
-    console.log(`オセロを置いた座標 Y:${originY}  X:${originX}`);
+    debug(` /--- forEach ${index + 1}回目 ---/`);
+    debug(`オセロを置いた座標 Y:${originY}  X:${originX}`);
     var x = originX;
     var y = originY;
     var currentCoordinate = []; // ひっくり返せる座標のオブジェクト格納する配列
     var stones = [currentColor]; // 自分がいま置いた石の色
-    console.log(direction);
     // 最大7回繰り返す
     for (let i = 1; i <= 7; i++) {
       // 盤面をクリックした座標（originY, originX）の値を基準に縦横斜めにオセロが置かれているのか判定する（directionsオブジェクトを使用）
@@ -203,7 +278,7 @@ function canPutStone(originX, originY, currentColor) {
       // y軸に対しても同様の処理を行う
       x += direction.x;
       y += direction.y;
-      console.log(`${direction.name} 盤面を検索しています: x:${x} y:${y}`);
+      debug(`${direction.name} 盤面を検索しています: x:${x} y:${y}`);
       if (x > 7 || x < 0 || y > 7 || y < 0) {
         break; // 閾値まで到達したらループ処理を抜ける
       }
@@ -211,21 +286,27 @@ function canPutStone(originX, originY, currentColor) {
       if (board[y][x] === 0) {
         break;
       }
-      // ひっくり返せる盤面の情報を配列に追加
+      // 盤面の石の配置情報を配列に追加
+      debug("盤面の石の配置情報を配列に追加");
       stones.push(board[y][x]);
-      if (board[y][x] !== currentColor) {
-        console.log("ひっくり返す座標を確認しています");
-        currentCoordinate.push({ y, x });
-        console.log(currentCoordinate);
-        console.log(stones);
-        console.log("/ --- --- --- --- /");
-      }
-      // 次の石がプレーヤーと同じ色だったら処理を停止する
+      currentCoordinate.push({ y, x });
+      debug(stones);
+      debug(currentCoordinate);
+
+      // 先頭の次の石がプレーヤーと同じ色だったら処理を停止する
       if (stones[1] === currentColor) {
-        console.log("次の石がプレーヤーと同じ色だった: " + currentColor);
-        console.log(stones);
-        console.log("/ --- --- --- --- /");
+        debug("次の石がプレーヤーと同じ色だった: " + currentColor);
+        debug(stones);
+        debug(" ");
         return;
+      }
+      // 先頭以外で自分と同じ色の石の情報が出た場合はそのループを抜ける
+      if (board[y][x] === currentColor) {
+        debug("ひっくり返す石の情報と座標を確認しています");
+        debug(currentCoordinate);
+        debug(stones);
+        debug(" ");
+        break;
       }
     }
 
@@ -234,12 +315,16 @@ function canPutStone(originX, originY, currentColor) {
       return;
     }
 
+    if (stones[0] !== currentColor) {
+      return;
+    }
+
     // 末尾は必ず自分と同じ色である必要がある
     let lastIndex = stones.length - 1;
     if (stones[lastIndex] === currentColor) {
-      console.log("--- 1方向終了後の処理です ---");
-      console.log(stones);
-      console.log(
+      debug("--- 1方向終了後の処理です ---");
+      debug(stones);
+      debug(
         "x:" +
           originX +
           " y:" +
@@ -248,22 +333,25 @@ function canPutStone(originX, originY, currentColor) {
           direction.name +
           "には、ひっくり返せる"
       );
-      console.log("ひっくり返す座標です: " + JSON.stringify(currentCoordinate));
-      console.log("--- --- ---");
-      console.log(currentCoordinate);
-      console.log("--- --- ---");
+      debug("ひっくり返す座標です");
+      debug(currentCoordinate);
+      debug(" ");
       board[originY][originX] = currentColor;
       // ひっくり返す処理をまとめた関数
       turnOver(currentCoordinate, board, currentColor);
       canReverse = true;
     }
   });
-  console.log("  ");
+  debug("  ");
+  let game_end = checkBoard();
+  console.log(game_end);
   return canReverse;
 }
 
 // クリックしたときに石を置けるようになる
 canvas.onclick = (e) => {
+  console.log(`%c プレーヤーのターン`, "color: red; font-weight: 600;");
+  console.log(" ");
   // 要素の寸法とそのビューポートに対する位置を返す
   // 左上の座標を（0, 0）起点として、要素の左上の位置をtop, left, bottom, right などで指定したり取得したりする
   // DOMRectというオブジェクトの中に {top: xxx, left: xxx ...} のようにそのクリックした要素の座標が取得されている
@@ -282,24 +370,20 @@ canvas.onclick = (e) => {
   // 既に石が置かれていたら処理を停止
   if (!canPutStone(posX, posY, currentPlayer)) {
     // 処理が停止された場合はプレーヤー権限を移行しない（元の色に戻す）
-    currentPlayer = currentPlayer === WHITE ? WHITE : BLACK;
-    console.log("処理を停止しました。");
+    console.log("処理を停止しました。 現在のプレーヤー： " + currentPlayer);
     console.log("*** *** ***");
     return;
   }
-  console.log("石配置関数実行前のプレーヤー： " + currentPlayer);
   drawStone(posX, posY, currentPlayer);
-  currentPlayer = currentPlayer === WHITE ? BLACK : WHITE;
-  console.log("--- --- ---");
-  console.log("石配置関数実行後のプレーヤー： " + currentPlayer);
-  console.log("ユーザー変更関数実行後のプレーヤー： " + currentPlayer);
-  changeUser(currentPlayer);
-};
 
+  console.log(`%c プレーヤーのターン終了`, "color: red; font-weight: 600;");
+  console.log(" ");
+  cpuDwawSrone();
+};
 
 // オセロをひっくり返す関数
 function turnOver(currentCoordinate, board, currentColor) {
-  console.log(board)
+  console.log(board);
   try {
     currentCoordinate.forEach((item) => {
       board[item.y][item.x] = currentColor;
@@ -352,35 +436,21 @@ function getLineH(y) {
   ctx.closePath(); // 経路の終了
   ctx.stroke();
 }
-// プレーヤーを変更する関数
-function changeUser(currentPlayer) {
-  if (currentPlayer === 1) {
-    currentPlayer = 1;
-    player.innerHTML = "白色";
-    console.log("現在のユーザー：" + currentPlayer);
-  } else {
-    currentPlayer = 2;
-    player.innerHTML = "黒色";
-    console.log("現在のユーザー：" + currentPlayer);
-  }
-}
 
 // ゲームスタート時に石を選択する
 function initCurrentPlayer(val) {
-  if (currentPlayer === val) {
-    player.innerHTML = "白色";
+  if (val === 2) {
+    currentPlayer = val;
+    player.innerHTML = "先攻（黒）";
   } else {
-    player.innerHTML = "黒色";
+    currentPlayer = val;
+    player.innerHTML = "後攻（白）";
   }
 }
 
 // ゲームの初期化
 function init() {
   // オセロを配置する
-  // drawStone(3, 4, "white");
-  // drawStone(4, 3, "white");
-  // drawStone(4, 4, "black");
-  // drawStone(3, 3, "black");
   board.reflesh();
 
   // 盤面の線を描画する

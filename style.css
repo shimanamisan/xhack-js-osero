@@ -5,7 +5,7 @@
 }
 
 .container__innner {
-  opacity: 1;
+  opacity: 0;
 }
 
 .game__start__container {
@@ -18,7 +18,7 @@
 
 .game__select__container {
   position: relative;
-  /* top: -21rem; */
+  top: -21rem;
 }
 
 .game__select {
@@ -27,4 +27,9 @@
 
 .game__btn {
   margin-left: 26px;
+}
+
+.skip__btn {
+  display: block;
+  margin: 42px auto;
 }
