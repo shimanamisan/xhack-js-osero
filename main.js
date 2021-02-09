@@ -307,6 +307,7 @@ function cpuDwawSrone() {
     alert("CPUは石を置ける場所がありませんでした。");
     return;
   }
+
   // 検索された座標を元にランダムで配置する
   let searchLength = Math.floor(Math.random() * searchresult.length);
   let cpuPosX;
@@ -341,33 +342,42 @@ function cpuPutSearchStone(X, Y, cpuColor, cpuDirections) {
     // 自分がいま置いた石の色を格納しておく
     // 次の配列に格納された石が自分と異なる色の石ならひっくり返せる可能性がある
     var stones = [cpuColor];
+
+    // 既に石が配置されている箇所は検索を停止する
     if (board[y][x] !== 0) {
       return;
     }
+
     // 最大7回繰り返す
     for (let i = 1; i <= 7; i++) {
       // cpuDebug(`座標を元にループを開始: ${i}回目`);
       x += direction.x;
       y += direction.y;
+
+      // 検索する配列の個数を超えたらループ処理を抜ける
       if (x > 7 || x < 0 || y > 7 || y < 0) {
-        // 閾値まで到達したらループ処理を抜ける
         break;
       }
+
       // 何も置いていないマスだったら処理を抜ける
       if (board[y][x] === 0) {
         break;
       }
+
       stones.push(board[y][x]);
+
       // 次の石がプレーヤーと同じ色だったら処理を停止する
       if (stones[1] === cpuColor) {
         return;
       }
+
       // 先頭以外で自分と同じ色の石の情報が出た場合はそのループを抜ける
       if (board[y][x] === cpuColor) {
         break;
       }
       cpuDebug(`ループ処理終了`);
     }
+
     // 配列が一つしかな場合はひっくり返せる石がないのでループを停止
     if (stones.length <= 1) {
       return;
@@ -377,6 +387,7 @@ function cpuPutSearchStone(X, Y, cpuColor, cpuDirections) {
     if (stones[0] !== cpuColor) {
       return;
     }
+
     // 末尾は必ず自分と同じ色である必要がある
     let lastIndex = stones.length - 1;
     if (stones[lastIndex] === cpuColor) {
@@ -390,10 +401,12 @@ function cpuPutSearchStone(X, Y, cpuColor, cpuDirections) {
 // 石が置けるか判定する
 function canPutStone(originX, originY, currentColor) {
   let canReverse = false; // ひっくり返せるかのフラグ
+
   if (board[originY][originX] !== 0) {
     alert("既に石が置かれています。");
     return false;
   }
+
   // 石を置きたい場所の八方向それぞれについて石がどのように配置されているか調べる
   directions.forEach((direction) => {
     debug(`オセロを置いた座標 Y:${originY}  X:${originX}`);
@@ -401,6 +414,7 @@ function canPutStone(originX, originY, currentColor) {
     var y = originY;
     var currentCoordinate = []; // ひっくり返せる座標のオブジェクト格納する配列
     var stones = [currentColor]; // 自分がいま置いた石の色
+
     // 最大7回繰り返す
     for (let i = 1; i <= 7; i++) {
       // 盤面をクリックした座標（originY, originX）の値を基準に縦横斜めにオセロが置かれているのか判定する（directionsオブジェクトを使用）
@@ -409,9 +423,12 @@ function canPutStone(originX, originY, currentColor) {
       x += direction.x;
       y += direction.y;
       debug(`${direction.name} 盤面を検索しています: x:${x} y:${y}`);
+
+      // 検索する配列の個数を超えたらループ処理を抜ける
       if (x > 7 || x < 0 || y > 7 || y < 0) {
-        break; // 閾値まで到達したらループ処理を抜ける
+        break;
       }
+
       // 何も置いていないマスだったら処理を抜ける
       if (board[y][x] === 0) {
         break;
@@ -427,6 +444,7 @@ function canPutStone(originX, originY, currentColor) {
       if (stones[1] === currentColor) {
         return;
       }
+
       // 先頭以外で自分と同じ色の石の情報が出た場合はそのループを抜ける
       if (board[y][x] === currentColor) {
         break;
