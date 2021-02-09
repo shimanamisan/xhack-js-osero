@@ -72,6 +72,8 @@ class GameManegement {
     this.FIELD_HEIGHT = FIELD_HEIGHT; // マスのサイズ（高さ）
     this.BLOCK_SIZE = FIELD_WIDTH / 8; // 碁盤の目のサイズ
     this.LINEWIDTH = LINEWIDTH; // 線の太さ
+    this.white = 0;
+    this.black = 0;
     this.ctx = null;
     this.color = null;
   }
@@ -107,7 +109,6 @@ class GameManegement {
       this.getLineH(this.BLOCK_SIZE * k);
     }
   }
-
   // 座標を指定して石を置く関数
   drawStone(x, y, stonColor) {
     // 定数の値からcanvas要素に描画する色を判定
@@ -116,6 +117,32 @@ class GameManegement {
     this.ctx.beginPath();
     this.ctx.arc(25 + x * 50, 25 + y * 50, 22, 0, 2 * Math.PI);
     this.ctx.fill();
+  }
+  // ゲーム終了時に石の数を数える関数
+  countStones() {
+    for (let x = 0; x < 8; x++) {
+      for (let y = 0; y < 8; y++) {
+        if (board[y][x] === 1) {
+          this.white++;
+        } else if (board[y][x] === 2) {
+          this.black++;
+        }
+      }
+    }
+  }
+  // 数えた数を元に石を配置する関数
+  stonesRelocation() {
+    for (let x = 0; x < 8; x++) {
+      for (let y = 0; y < 8; y++) {
+        if (this.white > 0) {
+          board[y][x] = 1;
+          this.white--;
+        } else {
+          board[y][x] = 2;
+          this.black--;
+        }
+      }
+    }
   }
 }
 // インスタンス化
@@ -227,30 +254,29 @@ canvas.onclick = (e) => {
 
   // 既に石が置かれていたら処理を停止
   if (!canPutStone(posX, posY, currentPlayer)) {
-    debug("処理を停止しました。");
     return;
   }
   gameMNG.drawStone(posX, posY, currentPlayer);
-  debug("プレーヤーのターン終了");
-  cpuDwawSrone();
 
-  // ゲーム終了のメッセージは石を置いて画面が描画されてからメッセージを表示したいので
-  // 非同期処理にしてメインスレッドから外しておく
+  // 石が表がされたあとにゲーム終了のメッセージを表示したいので、
+  // ここの処理は非同期処理にしてメインスレッドから処理を切り離しておく
   setTimeout(() => {
     if (board.check()) {
       alert("ゲームを終了します！");
       resetDOM.style.display = "block";
       skipDOM.style.display = "none";
+      gameMNG.countStones();
+      gameMNG.stonesRelocation();
+      board.reflesh();
       return;
+    } else {
+      cpuDwawSrone();
     }
-  }, 2000);
+  }, 50);
 };
 
 // CPUが石を置く関数
 function cpuDwawSrone() {
-  cpuDebug(`CPUのターン`);
-  cpuDebug(" ");
-  cpuDebug(" --- CPU: ボードを検索しています --- ");
   let Y = null;
   let X = null;
   // CPUが石を置ける座標（オブジェクト）を格納する配列
@@ -278,17 +304,18 @@ function cpuDwawSrone() {
   cpuPosX = searchresult[searchLength].X;
   cpuPosY = searchresult[searchLength].Y;
 
-  cpuDebug(" --- CPU: ボードを検索終了 --- ");
-  cpuDebug(`CPUのターン終了`, "color: white; font-weight: 600;");
-  cpuDebug(" ");
+  canPutStone(cpuPosX, cpuPosY, cpuColor);
 
+  // 石が表がされたあとにゲーム終了のメッセージを表示したいので、
+  // ここの処理は非同期処理にしてメインスレッドから処理を切り離しておく
   setTimeout(() => {
-    canPutStone(cpuPosX, cpuPosY, cpuColor);
-
     if (board.check()) {
       alert("ゲームを終了します！");
       resetDOM.style.display = "block";
       skipDOM.style.display = "none";
+      gameMNG.countStones();
+      gameMNG.stonesRelocation();
+      board.reflesh();
       return;
     }
   }, 500);
@@ -321,9 +348,6 @@ function cpuPutSearchStone(X, Y, cpuColor, cpuDirections) {
         break;
       }
       stones.push(board[y][x]);
-      cpuDebug(stones);
-      cpuDebug(" ");
-
       // 次の石がプレーヤーと同じ色だったら処理を停止する
       if (stones[1] === cpuColor) {
         return;
@@ -344,19 +368,11 @@ function cpuPutSearchStone(X, Y, cpuColor, cpuDirections) {
 
     // 先頭が自分の石と違う場合は処理を停止
     if (stones[0] !== cpuColor) {
-      cpuDebug("自分の色の石と異なるので処理を停止します");
       return;
     }
     // 末尾は必ず自分と同じ色である必要がある
     let lastIndex = stones.length - 1;
     if (stones[lastIndex] === cpuColor) {
-      cpuDebug("--- 1方向終了後の処理です ---");
-      cpuDebug(stones);
-      cpuDebug(`CPUが石を配置できる座標 X:${X}  Y:${Y}`);
-      cpuDebug(
-        "x:" + x + " y:" + y + " は" + direction.name + "には、ひっくり返せる"
-      );
-      cpuDebug(" ");
       cpuDirections.push({ X, Y });
       return;
     }
@@ -418,20 +434,6 @@ function canPutStone(originX, originY, currentColor) {
     // 末尾は必ず自分と同じ色である必要がある
     let lastIndex = stones.length - 1;
     if (stones[lastIndex] === currentColor) {
-      debug("--- 1方向終了後の処理です ---");
-      debug(stones);
-      debug(
-        "x:" +
-          originX +
-          " y:" +
-          originY +
-          " は" +
-          direction.name +
-          "には、ひっくり返せる"
-      );
-      debug("ひっくり返す座標です");
-      debug(currentCoordinate);
-      debug(" ");
       board[originY][originX] = currentColor;
       // ひっくり返す処理をまとめた関数
       board.turnOver(currentCoordinate, board, currentColor);
