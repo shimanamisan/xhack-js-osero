@@ -3,6 +3,12 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-giJF6kkoqNQ00vy+HMDP7azOuL0xtbfIcaT9wjKHr8RbDVddVHyTfAAsrekwKmP1"
+      crossorigin="anonymous"
+    />
     <link rel="stylesheet" href="style.css" />
     <title>オセロを作る</title>
   </head>
@@ -17,10 +23,10 @@
           id="canvas"
           style="background-color: green"
         ></canvas>
-        <button id="skip" class="btn" type="button" onclick="skip()">
-          スキップする
+        <button id="skip" class="btn btn-outline-primary skip__btn" type="button" onclick="skip()">
+          自分の順番をスキップする
         </button>
-        <button id="reset" class="btn" type="button" onclick="reset(event)">
+        <button id="reset" class="btn btn-outline-secondary reset__btn" type="button" onclick="reset(event)">
           リセットする
         </button>
       </div>
@@ -33,7 +39,11 @@
         <form action="" id="gameStartTarget" class="game__start__container">
           <input type="radio" name="player" value="2" /><span>先攻</span>
           <input type="radio" name="player" value="1" /><span>後攻</span>
-          <button class="game__btn" type="submit" onclick="gameStart(event)">
+          <button
+            class="btn btn-outline-primary game__btn"
+            type="submit"
+            onclick="gameStart(event)"
+          >
             スタート
           </button>
         </form>

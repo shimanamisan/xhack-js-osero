@@ -7,6 +7,7 @@ body {
 }
 
 .container {
+  padding-top: 64px;
   margin: 0 auto;
   width: 640px;
   height: 100vh;
@@ -31,19 +32,26 @@ body {
   top: -28rem;
 }
 
+.game__select__container input {
+  margin-left: 8px;
+}
+
 .game__select {
   margin-top: 32px;
 }
 
 .game__btn {
-  margin-left: 26px;
+  margin-left: 26px !important;
+  display: inline-block;
 }
 
 .btn {
-  display: block;
   margin: 42px auto;
 }
 
-#reset {
+.skip__btn{
+  display: inline-block;
+}
+.reset__btn {
   display: none;
 }
