@@ -68,6 +68,7 @@ function initCurrentPlayer(val) {
   }
 }
 
+// ゲームの進行やcanvas要素の描画を管理するクラス
 class GameManegement {
   constructor(FIELD_WIDTH, FIELD_HEIGHT, LINEWIDTH) {
     this.FIELD_WIDTH = FIELD_WIDTH; // マスのサイズ（横幅）
@@ -79,6 +80,7 @@ class GameManegement {
     this.ctx = null;
     this.color = null;
   }
+  // canvas要素を取得する関数
   getCTX() {
     // canvas要素を取得する
     const canvas = document.getElementById("canvas");
@@ -86,7 +88,7 @@ class GameManegement {
     // canvas要素に対して線や円を書いたり、操作することが出来るいろいろなメソッドを持っている
     this.ctx = canvas.getContext("2d");
   }
-  // 行の線を描画する
+  // 行の線を描画する関数
   getLineW(x) {
     this.ctx.beginPath(); // 経路の開始
     this.ctx.moveTo(0, x); // どの地点から
@@ -162,7 +164,7 @@ function skip() {
   }
 }
 
-// リセットボタン
+// 画面をリロードしてゲームをリセットする
 function reset(event) {
   event.preventDefault();
   location.reload();
@@ -180,7 +182,7 @@ const directions = [
   { name: "右上方向", x: 1, y: -1 },
 ];
 
-// boardの二次元配列データを元にcanvasに石を実際に配置するコードを書いてみる
+// オセロの配置を管理する配列
 const board = [
   [0, 0, 0, 0, 0, 0, 0, 0],
   [0, 0, 0, 0, 0, 0, 0, 0],
@@ -192,7 +194,7 @@ const board = [
   [0, 0, 0, 0, 0, 0, 0, 0],
 ];
 
-// オブジェクトに新しく配列を追加
+// オブジェクトに新しくメソッドを追加（配置された石を描画する）
 board.reflesh = () => {
   for (let x = 0; x < 8; x++) {
     for (let y = 0; y < 8; y++) {
@@ -225,6 +227,7 @@ board.check = () => {
 // オセロをひっくり返す関数
 board.turnOver = (currentCoordinate, board, currentColor) => {
   try {
+    // currentCoordinate：ひっくり返す石の座標が格納されている
     currentCoordinate.forEach((item) => {
       board[item.y][item.x] = currentColor;
     });
@@ -234,7 +237,7 @@ board.turnOver = (currentCoordinate, board, currentColor) => {
   }
 };
 
-// オセロを配置する
+// 配置されたオセロを描画する
 board.reflesh();
 
 // クリックしたときに石を置けるようになる
@@ -260,7 +263,7 @@ canvas.onclick = (event) => {
   }
   gameMNG.drawStone(posX, posY, currentPlayer);
 
-  // 石が表がされたあとにゲーム終了のメッセージを表示したいので、
+  // 石が描画されたあとにゲーム終了のメッセージを表示したいので、
   // ここの処理は非同期処理にしてメインスレッドから処理を切り離しておく
   setTimeout(() => {
     if (board.check()) {
@@ -299,7 +302,7 @@ function cpuDwawSrone() {
     alert("CPUは石を置ける場所がありませんでした。");
     return;
   }
-
+  // 検索された座標を元にランダムで配置する
   let searchLength = Math.floor(Math.random() * searchresult.length);
   let cpuPosX;
   let cpuPosY;
@@ -308,7 +311,7 @@ function cpuDwawSrone() {
 
   canPutStone(cpuPosX, cpuPosY, cpuColor);
 
-  // 石が表がされたあとにゲーム終了のメッセージを表示したいので、
+  // 石が描画されたあとにゲーム終了のメッセージを表示したいので、
   // ここの処理は非同期処理にしてメインスレッドから処理を切り離しておく
   setTimeout(() => {
     if (board.check()) {
@@ -356,9 +359,6 @@ function cpuPutSearchStone(X, Y, cpuColor, cpuDirections) {
       }
       // 先頭以外で自分と同じ色の石の情報が出た場合はそのループを抜ける
       if (board[y][x] === cpuColor) {
-        cpuDebug("ひっくり返す石の情報と座標を確認しています");
-        cpuDebug(stones);
-        cpuDebug(" ");
         break;
       }
       cpuDebug(`ループ処理終了`);
