@@ -42,7 +42,9 @@ function gameStart(event) {
     initCurrentPlayer(WHITE);
     // プレーヤーが後攻だった場合はCPUが先攻として実行
     cpuColor = BLACK;
-    cpuDwawSrone();
+    setTimeout(() => {
+      cpuDwawSrone();
+    }, 1000);
   } else if (formList.value === "2") {
     BLACK = Number(formList.value);
     initCurrentPlayer(BLACK);
@@ -236,19 +238,19 @@ board.turnOver = (currentCoordinate, board, currentColor) => {
 board.reflesh();
 
 // クリックしたときに石を置けるようになる
-canvas.onclick = (e) => {
+canvas.onclick = (event) => {
   debug("プレーヤーのターン");
   debug(" ");
   // 要素の寸法とそのビューポートに対する位置を返す
   // 左上の座標を（0, 0）起点として、要素の左上の位置をtop, left, bottom, right などで指定したり取得したりする
   // DOMRectというオブジェクトの中に {top: xxx, left: xxx ...} のようにそのクリックした要素の座標が取得されている
   // ここでは盤の大枠の要素の高さや座標が取得されている
-  var rect = e.target.getBoundingClientRect();
+  var rect = event.target.getBoundingClientRect();
   // 要素の寸法から補正する
-  // e.clientX クリックした要素のX座標の位置（ここではcanvas要素内）
-  // e.clientY クリックした要素のY座標の位置（ここではcanvas要素内）
-  mouseX = e.clientX - Math.floor(rect.left) - 2;
-  mouseY = e.clientY - Math.floor(rect.top) - 2;
+  // event.clientX クリックした要素のX座標の位置（ここではcanvas要素内）
+  // event.clientY クリックした要素のY座標の位置（ここではcanvas要素内）
+  mouseX = event.clientX - Math.floor(rect.left) - 2;
+  mouseY = event.clientY - Math.floor(rect.top) - 2;
   const posX = Math.round((mouseX - 25) / 50);
   const posY = Math.round((mouseY - 25) / 50);
 
@@ -272,7 +274,7 @@ canvas.onclick = (e) => {
     } else {
       cpuDwawSrone();
     }
-  }, 50);
+  }, 1000);
 };
 
 // CPUが石を置く関数
@@ -318,7 +320,7 @@ function cpuDwawSrone() {
       board.reflesh();
       return;
     }
-  }, 500);
+  }, 1000);
 }
 
 // CPU用のオセロ配置出来る場所を検索するメソッド
