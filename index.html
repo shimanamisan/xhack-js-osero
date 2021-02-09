@@ -23,12 +23,35 @@
           id="canvas"
           style="background-color: green"
         ></canvas>
-        <button id="skip" class="btn btn-outline-primary skip__btn" type="button" onclick="skip()">
+        <button
+          id="skip"
+          class="btn btn-outline-primary skip__btn"
+          type="button"
+          onclick="skip()"
+        >
           自分の順番をスキップする
         </button>
-        <button id="reset" class="btn btn-outline-secondary reset__btn" type="button" onclick="reset(event)">
-          リセットする
-        </button>
+        <div id="reset">
+          <div class="score__container">
+            <div class="score">
+              <p>白色の数は、</p>
+              <p id="white_score"></p>
+              <p>個です。</p>
+            </div>
+            <div class="score">
+              <p>黒色の数は、</p>
+              <p id="black_score"></p>
+              <p>個です。</p>
+            </div>
+          </div>
+          <button
+            class="btn btn-outline-secondary reset__btn"
+            type="button"
+            onclick="reset(event)"
+          >
+            リセットする
+          </button>
+        </div>
       </div>
 
       <div class="game__select__container">

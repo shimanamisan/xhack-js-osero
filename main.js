@@ -136,6 +136,11 @@ class GameManegement {
   }
   // 数えた数を元に石を配置する関数
   stonesRelocation() {
+    // 最初にHTMLに個数を表示する
+    const black_score = document.getElementById("black_score");
+    const white_score = document.getElementById("white_score");
+    black_score.innerHTML = this.black;
+    white_score.innerHTML = this.white;
     for (let x = 0; x < 8; x++) {
       for (let y = 0; y < 8; y++) {
         if (this.white > 0) {

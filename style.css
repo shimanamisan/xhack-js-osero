@@ -5,7 +5,6 @@ body {
   width: 100%;
   height: 100%;
 }
-
 .container {
   padding-top: 64px;
   margin: 0 auto;
@@ -14,44 +13,44 @@ body {
   overflow: hidden;
   text-align: center;
 }
-
 .container__innner {
   opacity: 0;
 }
-
 .game__start__container {
   margin-top: 48px;
 }
-
 .game__start__container input {
   display: inline-block;
 }
-
 .game__select__container {
   position: relative;
   top: -28rem;
 }
-
 .game__select__container input {
   margin-left: 8px;
 }
-
 .game__select {
   margin-top: 32px;
 }
-
 .game__btn {
   margin-left: 26px !important;
   display: inline-block;
 }
-
 .btn {
   margin: 42px auto;
 }
-
-.skip__btn{
+.skip__btn {
   display: inline-block;
 }
-.reset__btn {
+.score__container {
+  display: flex;
+  justify-content: space-evenly;
+}
+.score {
+  display: flex;
+}
+#reset {
+  margin-top: 40px;
+  padding: 0 40px;
   display: none;
 }
