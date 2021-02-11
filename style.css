@@ -55,8 +55,16 @@ body {
   display: none;
 }
 
-@media screen and (min-width: 412px) and (max-width: 618px) {
+@media screen and (min-width: 320px) and (max-width: 618px) {
   .l-container {
     width: 100%;
+  }
+
+  #reset {
+    padding: 0 8px;
+  }
+
+  .score__container {
+    font-size: 15px;
   }
 }
