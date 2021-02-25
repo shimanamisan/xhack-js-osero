@@ -24,7 +24,7 @@ class GameManagement {
     this.black = 0;
     this.ctx = null;
     this.color = null;
-    this.debug_flg = false; // デバッグしたときはtrueにする
+    this.debug_flg = true; // デバッグしたときはtrueにする
   }
   // デバッグ関数
   debug(str) {
